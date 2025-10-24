@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>COTIZA MI AUTO - Cotizar Renault </title>
+  <style>
+    :root{--accent:#0b6fb7;--bg:#0f1720;--card:#0b1220;--muted:#9aa4ad}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#071025 0%, #0d1722 100%);color:#e6eef6;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+    .card{width:100%;max-width:760px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));border-radius:12px;padding:20px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    h1{margin:0 0 6px;font-size:20px}
+    p.lead{color:var(--muted);margin:0 0 18px}
+    form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    label{display:block;font-size:13px;color:#cfe6ff;margin-bottom:6px}
+    input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:inherit;font-size:14px}
+    textarea{min-height:110px;resize:vertical}
+    .full{grid-column:1/ -1}
+    .actions{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:12px}
+    button{background:var(--accent);border:none;padding:10px 16px;border-radius:10px;color:white;font-weight:600;cursor:pointer}
+    .secondary{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+    .note{font-size:13px;color:var(--muted)}
+    .success{background:#09351c;padding:8px;border-radius:8px;color:#b7f3c6}
+    .error{background:#3b1212;padding:8px;border-radius:8px;color:#ffb5b5}
+    footer{margin-top:14px;font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="card" role="main">
+    <h1>COTIZA MI AUTO — Cotiza tu Renault YA </h1>
+    <p class="lead">Rellena este formulario y te llegará un mensaje con las preguntas directamente a mi WhatsApp / email. (Solo necesitas subirlo a GitHub Pages o cualquier hosting estático).</p>
+
+    <!-- Mensajes dinámicos -->
+    <div id="msg" class="full" style="display:none"></div>
+
+    <form id="cotizaForm"
+     action="https://formspree.io/f/manprpyv"
+     method="POST">
+      <div>
+        <label for="nombre">Nombre completo</label>
+        <input id="nombre" name="nombre" required placeholder="Ej: Juan Pérez" />
+      </div>
+
+      <div>
+        <label for="telefono">Teléfono / WhatsApp</label>
+        <input id="telefono" name="telefono" required placeholder="Ej: +54 9 261 123-4567" />
+      </div>
+
+      <div>
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="ejemplo@correo.com" />
+      </div>
+
+      <div>
+        <label for="dni">DNI / CUIT (opcional)</label>
+        <input id="dni" name="dni" placeholder="DNI o CUIT" />
+      </div>
+
+      <div class="full">
+        <label for="modelo">Modelo que te interesa</label>
+        <select id="modelo" name="modelo">
+          <option value="Renault Master L1H1">Renault Master L1H1</option>
+          <option value="Renault Kardian">Renault Kardian</option>
+          <option value="Renault Kangoo Furgón">Renault Kangoo Furgón</option>
+          <option value="Renault Kangoo Stepway">Renault Kangoo Stepway</option>
+        </select>
+      </div>
+
+      <div class="full">
+        <label for="consulta">Consultas / comentarios</label>
+        <textarea id="consulta" name="consulta" placeholder="¿Financiación, entrega, tasa 0%...?"></textarea>
+      </div>
+
+      <div class="full">
+        <label><input type="checkbox" id="consent" required /> Acepto que mis datos sean contactados por el equipo de ventas.</label>
+      </div>
+
+      <div class="full actions">
+        <div class="note">Protegemos tus datos — solo uso comercial.</div>
+        <div style="display:flex;gap:8px">
+          <button type="button" id="submitBtn">Enviar cotización</button>
+          <button type="reset" class="secondary">Borrar</button>
+        </div>
+      </div>
+    </form>
+
+    <footer>
+      <strong>Instrucciones de uso (rápidas):</strong>
+      <ol>
+        <li>Regístrate en <em>Formspree</em> (gratuito) o en <em>EmailJS</em> para recibir notificaciones por email/WhatsApp y copia el endpoint/credenciales.</li>
+        <li>Abre el archivo <code>index.html</code> (este mismo) y sustituye los marcadores en el script (CONFIGURACIÓN) por tus credenciales.</li>
+        <li>Sube el archivo a GitHub Pages, Netlify o cualquier hosting estático. ¡Listo!</li>
+      </ol>
+    </footer>
+
+    <hr style="margin-top:12px;border:none;border-top:1px solid rgba(255,255,255,0.03)"/>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px">Opciones de envío configurables en el código: Formspree (POST), EmailJS (client-side) o una llamada a tu API si tienes backend.</div>
+  </div>
+
+  <script>
+    const CONFIG = {
+      use: 'formspree', // 'formspree' | 'emailjs' | 'manual'
+      FORMSPREE_URL: 'https://formspree.io/f/YOUR_ID_HERE',
+      emailjs: {
+        userID: 'YOUR_EMAILJS_USERID',
+        serviceID: 'YOUR_SERVICE_ID',
+        templateID: 'YOUR_TEMPLATE_ID'
+      },
+      webhook: ''
+    };
+
+    const form = document.getElementById('cotizaForm');
+    const msg = document.getElementById('msg');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function showMessage(text, type='success'){
+      msg.style.display='block';
+      msg.className = type === 'success' ? 'full success' : 'full error';
+      msg.innerText = text;
+    }
+
+    async function submitForm(data){
+      if(CONFIG.use === 'formspree'){
+        try{
+          const res = await fetch(CONFIG.FORMSPREE_URL, {
+            method:'POST', headers:{'Accept':'application/json','Content-Type':'application/json'},
+            body: JSON.stringify(data)
+          });
+          const j = await res.json();
+          if(res.ok){
+            showMessage('¡Enviado! Te contactaremos pronto.');
+            form.reset();
+          } else {
+            showMessage('Error: ' + (j.error || 'no se pudo enviar'), 'error');
+          }
+        }catch(e){
+          showMessage('Error de conexión. Comprueba la URL de Formspree.', 'error');
+        }
+      }
+
+      if(CONFIG.use === 'emailjs'){
+        if(typeof emailjs === 'undefined'){
+          showMessage('EmailJS no está cargado. Revisa la configuración.', 'error'); return;
+        }
+        try{
+          await emailjs.send(CONFIG.emailjs.serviceID, CONFIG.emailjs.templateID, data, CONFIG.emailjs.userID);
+          showMessage('¡Enviado vía EmailJS!'); form.reset();
+        }catch(err){ showMessage('Error EmailJS: ' + err.text, 'error'); }
+      }
+
+      if(CONFIG.webhook){
+        try{ await fetch(CONFIG.webhook, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); }catch(e){ }
+      }
+    }
+
+    submitBtn.addEventListener('click', async function(){
+      submitBtn.disabled = true; submitBtn.innerText = 'Enviando...';
+      const formData = new FormData(form);
+      const payload = Object.fromEntries(formData.entries());
+      payload._sent_at = new Date().toISOString();
+      payload._source = window.location.href;
+
+      await submitForm(payload);
+      submitBtn.disabled = false; submitBtn.innerText = 'Enviar cotización';
+    });
+
+    if(CONFIG.use === 'emailjs'){
+      const s = document.createElement('script');
+      s.src = 'https://cdn.emailjs.com/sdk/2.3.2/email.min.js';
+      s.onload = ()=>{ emailjs.init(CONFIG.emailjs.userID); };
+      document.head.appendChild(s);
+    }
+  </script>
+</body>
+</html>
